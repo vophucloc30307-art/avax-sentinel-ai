@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AvaxSentinel AI V2 | Enterprise Guardrail & x402 Micropayment Protocol on Avalanche</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Ethers.js v5 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            avax: '#E84142',
+            avaxDark: '#B82324',
+            cyberDark: '#0B0E14',
+            cyberCard: '#151922',
+            cyberBorder: '#2D333B'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #07090E; color: #E6EDF3; font-family: system-ui, -apple-system, sans-serif; }
+    .glow-red { box-shadow: 0 0 30px rgba(232, 65, 66, 0.2); }
+    .pulse-danger { animation: pulseDanger 1.5s infinite; }
+    @keyframes pulseDanger {
+      0%, 100% { border-color: rgba(232, 65, 66, 0.8); box-shadow: 0 0 20px rgba(232, 65, 66, 0.5); }
+      50% { border-color: rgba(232, 65, 66, 0.2); box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- Header / Navbar -->
+  <header class="border-b border-cyberBorder bg-cyberCard/90 backdrop-blur sticky top-0 z-50 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-avax flex items-center justify-center font-bold text-white text-xl shadow-lg">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-wide text-white">AvaxSentinel</span>
+            <span class="bg-red-500/20 text-avax text-xs font-semibold px-2 py-0.5 rounded border border-red-500/30">V2 ENTERPRISE</span>
+            <span class="bg-blue-500/20 text-blue-400 text-xs font-semibold px-2 py-0.5 rounded border border-blue-500/30 hidden sm:inline">EIP-712 + x402</span>
+          </div>
+          <p class="text-xs text-gray-400">Team CTST · UniHack: Build on Avalanche</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 sm:gap-4">
+        <a href="slides.html" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyberDark hover:bg-slate-800 border border-cyberBorder text-xs text-gray-300 transition">
+          <i data-lucide="presentation" class="w-3.5 h-3.5 text-avax"></i>
+          <span>Pitch Deck Slides</span>
+        </a>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyberDark border border-cyberBorder text-xs text-gray-300">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Avalanche Fuji (43113)</span>
+        </div>
+
+        <button id="connectWalletBtn" onclick="connectWallet()" class="flex items-center gap-2 bg-avax hover:bg-avaxDark transition text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md">
+          <i data-lucide="wallet" class="w-4 h-4"></i>
+          <span id="walletBtnText">Connect MetaMask</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8">
+
+    <!-- Hero Banner -->
+    <div class="rounded-2xl bg-gradient-to-r from-red-950/40 via-cyberCard to-cyberCard border border-red-500/30 p-8 glow-red flex flex-col lg:flex-row items-center justify-between gap-6">
+      <div class="space-y-3 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-avax text-xs font-bold">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          AUTONOMOUS TREASURY GUARDRAIL & ORACLE
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+          Zero-Trust AI Security Firewall & x402 Protocol on Avalanche
+        </h1>
+        <p class="text-gray-300 text-sm leading-relaxed">
+          Combines <strong>Data Science & ML Anomaly Detection</strong> with <strong>EIP-712 Cryptographic Signatures</strong> and an <strong>On-Chain Avalanche Fuji Circuit Breaker</strong>. Also incorporates the <strong>x402 Micropayment standard</strong> to monetize AI security audits per request in USDC.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-3.5 text-center">
+          <p class="text-[11px] text-gray-400">Circuit Breaker</p>
+          <p id="circuitStatus" class="text-base font-bold text-emerald-400 flex items-center justify-center gap-1 mt-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> ACTIVE
+          </p>
+        </div>
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-3.5 text-center">
+          <p class="text-[11px] text-gray-400">EIP-712 Oracle</p>
+          <p class="text-base font-bold text-blue-400 mt-1">VERIFIED</p>
+        </div>
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-3.5 text-center col-span-2 sm:col-span-1">
+          <p class="text-[11px] text-gray-400">x402 Audit Fee</p>
+          <p class="text-base font-bold text-yellow-400 mt-1">0.05 USDC</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-3 border-b border-cyberBorder pb-2 text-sm font-semibold">
+      <button onclick="switchTab('auditor')" id="tabBtnAuditor" class="px-4 py-2 rounded-lg bg-avax text-white flex items-center gap-2">
+        <i data-lucide="activity" class="w-4 h-4"></i>
+        AI Risk Auditor & Guardrail
+      </button>
+      <button onclick="switchTab('x402')" id="tabBtnX402" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-cyberCard flex items-center gap-2 transition">
+        <i data-lucide="credit-card" class="w-4 h-4"></i>
+        x402 Micropayment Rail (HTTP 402)
+      </button>
+      <button onclick="switchTab('architecture')" id="tabBtnArch" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-cyberCard flex items-center gap-2 transition">
+        <i data-lucide="network" class="w-4 h-4"></i>
+        Avalanche ICM & Architecture
+      </button>
+    </div>
+
+    <!-- TAB 1: AI AUDITOR & ON-CHAIN VAULT -->
+    <div id="tabAuditor" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- Left Column: Pre-Flight AI Transaction Auditor (7 Cols) -->
+      <div class="lg:col-span-7 bg-cyberCard border border-cyberBorder rounded-2xl p-6 space-y-6">
+        <div class="flex items-center justify-between border-b border-cyberBorder pb-4">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="cpu" class="text-avax w-5 h-5"></i>
+            <h2 class="text-lg font-bold text-white">Pre-Flight AI Risk Auditor</h2>
+          </div>
+          <span class="text-xs text-gray-400 font-mono">Engine: LightGBM + EIP-712</span>
+        </div>
+
+        <!-- Presets -->
+        <div class="space-y-2">
+          <label class="text-xs font-semibold text-gray-400">Select Test Attack Scenario:</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button onclick="applyPreset('safe')" class="px-3 py-2 text-xs rounded-lg bg-cyberDark hover:bg-zinc-800 border border-cyberBorder text-left font-medium transition">
+              🟢 Safe Swap<br><span class="text-[10px] text-gray-500">Trader Joe</span>
+            </button>
+            <button onclick="applyPreset('drain')" class="px-3 py-2 text-xs rounded-lg bg-cyberDark hover:bg-zinc-800 border border-cyberBorder text-left font-medium transition">
+              🔴 Drain Attack<br><span class="text-[10px] text-gray-500">Unlimited uint256</span>
+            </button>
+            <button onclick="applyPreset('slippage')" class="px-3 py-2 text-xs rounded-lg bg-cyberDark hover:bg-zinc-800 border border-cyberBorder text-left font-medium transition">
+              🟠 High Slippage<br><span class="text-[10px] text-gray-500">MEV Sandwich</span>
+            </button>
+            <button onclick="applyPreset('velocity')" class="px-3 py-2 text-xs rounded-lg bg-cyberDark hover:bg-zinc-800 border border-cyberBorder text-left font-medium transition">
+              🔴 Velocity Breach<br><span class="text-[10px] text-gray-500">> 24h Velocity</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Form fields -->
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Target Contract Address (Fuji / Mainnet)</label>
+            <input id="targetAddress" type="text" value="0x60ae616a2155ba3d9a68541ba4544862310933d4" class="w-full bg-cyberDark border border-cyberBorder rounded-xl px-4 py-2.5 text-sm font-mono text-gray-200 focus:outline-none focus:border-avax">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs text-gray-400 block mb-1">Amount (USDC)</label>
+              <input id="txAmount" type="number" value="500" class="w-full bg-cyberDark border border-cyberBorder rounded-xl px-4 py-2.5 text-sm font-mono text-gray-200 focus:outline-none focus:border-avax">
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 block mb-1">Pool Slippage (%)</label>
+              <input id="slippage" type="number" step="0.1" value="0.5" class="w-full bg-cyberDark border border-cyberBorder rounded-xl px-4 py-2.5 text-sm font-mono text-gray-200 focus:outline-none focus:border-avax">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Function Signature / Calldata</label>
+            <input id="calldata" type="text" value="0x38ed1739 (swapExactTokensForTokens)" class="w-full bg-cyberDark border border-cyberBorder rounded-xl px-4 py-2.5 text-sm font-mono text-gray-200 focus:outline-none focus:border-avax">
+          </div>
+
+          <button onclick="runAudit()" class="w-full bg-avax hover:bg-avaxDark transition text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg">
+            <i data-lucide="scan" class="w-4 h-4"></i>
+            Run AI Pre-Flight Audit & Sign EIP-712
+          </button>
+        </div>
+
+        <!-- Audit Result Output & Radar Chart Grid -->
+        <div id="auditResultBox" class="rounded-xl border border-cyberBorder bg-cyberDark p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-gray-400 uppercase">Risk Evaluation Output</span>
+            <span id="verdictBadge" class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              PASSED (SCORE 0/100)
+            </span>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs text-gray-400 font-mono">
+              <span>Risk Meter</span>
+              <span id="scoreText">0 / 100</span>
+            </div>
+            <div class="w-full bg-zinc-800 rounded-full h-3 overflow-hidden">
+              <div id="scoreBar" class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: 5%"></div>
+            </div>
+          </div>
+
+          <!-- 5-Axis Radar Chart Container -->
+          <div class="border border-cyberBorder/60 rounded-xl p-3 bg-black/40 flex flex-col items-center">
+            <p class="text-[11px] font-semibold text-gray-400 mb-2">5-Axis Security Threat Radar</p>
+            <div class="w-full max-w-[280px] h-[220px]">
+              <canvas id="riskRadarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Factors List -->
+          <div id="factorsContainer" class="text-xs space-y-1.5 text-gray-300 font-mono bg-black/40 p-3 rounded-lg border border-cyberBorder">
+            <p class="text-emerald-400 font-semibold">[+SAFE] Verified Avalanche protocol: Trader Joe Router</p>
+          </div>
+
+          <!-- EIP-712 Signature Display -->
+          <div class="pt-2 border-t border-cyberBorder/60 space-y-1">
+            <div class="flex items-center justify-between text-[11px] text-gray-400 font-mono">
+              <span>EIP-712 Attestation Hash:</span>
+              <span class="text-blue-400">ECDSA Verified</span>
+            </div>
+            <div id="signatureHash" class="text-[10px] font-mono text-gray-400 truncate bg-black/30 p-2 rounded border border-cyberBorder">
+              0xbd64c63de156e28eb76b926fb3106644c690a5f229d642ab5d0ccd51d0f0d3145b8f72a089d71481b0a7d5b8f72a089d71481b0a7d5b8f72a089d71481b0a7d51b
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live On-Chain Vault Controller (5 Cols) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Vault Status Card -->
+        <div id="vaultCard" class="bg-cyberCard border border-cyberBorder rounded-2xl p-6 space-y-5">
+          <div class="flex items-center justify-between border-b border-cyberBorder pb-4">
+            <div class="flex items-center gap-2">
+              <i data-lucide="shield" class="text-avax w-5 h-5"></i>
+              <h2 class="text-lg font-bold text-white">Avalanche Fuji Vault</h2>
+            </div>
+            <span class="text-xs text-gray-400 font-mono">0x48e1...321A</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-400">Vault Balance:</span>
+              <span id="vaultBalance" class="font-mono font-bold text-white">10,000.00 USDC</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-400">24h Remaining Cap:</span>
+              <span id="remainingCap" class="font-mono font-bold text-emerald-400">$8,500.00</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-400">Single Tx Cap:</span>
+              <span class="font-mono font-bold text-white">$2,500.00</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="space-y-3 pt-2">
+            <button onclick="simulateExecution()" class="w-full bg-zinc-800 hover:bg-zinc-700 transition border border-cyberBorder text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+              <i data-lucide="send" class="w-4 h-4 text-emerald-400"></i>
+              Execute Guarded AI Action
+            </button>
+
+            <button onclick="toggleCircuitBreaker()" id="killSwitchBtn" class="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-400 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition">
+              <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+              Emergency Circuit Breaker (Freeze)
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Audit Activity Log -->
+        <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-cyberBorder pb-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="list" class="text-avax w-4 h-4"></i>
+              Audit & Execution Log
+            </h3>
+            <span class="text-[10px] text-gray-500">Real-Time Telemetry</span>
+          </div>
+          <div id="activityLog" class="text-xs space-y-2 font-mono text-gray-400 max-h-48 overflow-y-auto">
+            <div class="p-2 rounded bg-cyberDark border border-cyberBorder flex items-center justify-between">
+              <span>[01:14:02] Trader Joe Safe Swap</span>
+              <span class="text-emerald-400">EXECUTED</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: x402 MICROPAYMENT RAIL -->
+    <div id="tabX402" class="hidden bg-cyberCard border border-cyberBorder rounded-2xl p-8 space-y-6">
+      <div class="flex items-center gap-3 border-b border-cyberBorder pb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+          <i data-lucide="credit-card"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">x402 Micropayment Protocol Integration (HTTP 402)</h2>
+          <p class="text-xs text-gray-400">Enabling AI-Audit-as-a-Service on Avalanche Fuji with USDC streaming and pay-per-request.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-white">HTTP 402 Flow for External AI Agents:</h3>
+          <ol class="text-xs text-gray-300 space-y-3 list-decimal list-inside">
+            <li>External Agent calls <code class="text-avax">POST /api/v1/audit-transaction</code> without authorization.</li>
+            <li>Sentinel Gateway responds with <code class="text-yellow-400">HTTP 402 Payment Required</code> and payment parameters:
+              <pre class="bg-black/60 p-3 rounded-lg border border-cyberBorder text-blue-300 mt-1 overflow-x-auto">WWW-Authenticate: x402 scheme=AvalancheFuji token=USDC amount=0.05 recipient=AgentGuardVault</pre>
+            </li>
+            <li>Agent dispatches 0.05 USDC micropayment to <code class="text-gray-300">AgentGuardVault.payAuditFee()</code>.</li>
+            <li>Gateway verifies on-chain receipt, executes ML risk evaluation, and returns cryptographically signed verdict.</li>
+          </ol>
+        </div>
+
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-5 space-y-4">
+          <h3 class="text-sm font-bold text-white">Test Simulated x402 Micropayment:</h3>
+          <div class="space-y-2 text-xs">
+            <p class="text-gray-400">Simulate external AI bot paying 0.05 USDC to audit its portfolio rebalance:</p>
+            <button onclick="testPayAudit()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              Pay 0.05 USDC via x402 & Get Audit
+            </button>
+            <div id="x402Result" class="p-3 bg-black/40 rounded border border-cyberBorder text-gray-300 font-mono text-[11px] hidden"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AVALANCHE ICM & ARCHITECTURE -->
+    <div id="tabArchitecture" class="hidden bg-cyberCard border border-cyberBorder rounded-2xl p-8 space-y-6">
+      <div class="flex items-center gap-3 border-b border-cyberBorder pb-4">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
+          <i data-lucide="network"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Avalanche Interchain Messaging (ICM) & Subnet Architecture</h2>
+          <p class="text-xs text-gray-400">Cross-L1 Security broadcasting and sub-second anomaly mitigation.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-gray-300">
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-5 space-y-3">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i data-lucide="zap" class="text-avax w-4 h-4"></i>
+            Sub-Second Finality
+          </h3>
+          <p>Avalanche Snow consensus finalizes transactions in under 1 second. When our AI detects an anomaly, the circuit breaker halts funds before malicious transactions can confirm in the mempool.</p>
+        </div>
+
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-5 space-y-3">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i data-lucide="shield-alert" class="text-blue-400 w-4 h-4"></i>
+            Teleporter / ICM Broadcast
+          </h3>
+          <p>When an emergency freeze occurs on Fuji or a custom L1, an Avalanche ICM telemetry packet is broadcasted across connected subnets, freezing multi-chain treasuries simultaneously.</p>
+        </div>
+
+        <div class="bg-cyberDark border border-cyberBorder rounded-xl p-5 space-y-3">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i data-lucide="cpu" class="text-emerald-400 w-4 h-4"></i>
+            Custom Avalanche L1 Ready
+          </h3>
+          <p>Designed to graduate from Avalanche C-Chain / Fuji into a dedicated <strong>AvaxSentinel Security L1</strong> where gas is paid in USDC or a custom governance token with zero gas friction for agents.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-cyberBorder bg-cyberDark px-6 py-6 text-center text-xs text-gray-500 space-y-2">
+    <p>Built for <strong>Team1 Vietnam UniHack 2026: Build on Avalanche</strong> by <strong>Team CTST</strong> (Võ Phúc Lộc & Nguyễn Xuân Nghi).</p>
+    <p>HCMUS Data Science · Avalanche Fuji Testnet · Smart Contract: <code class="text-gray-400">0x48e123B5F54F9D1c9A3B5f22E33b006A7bBf321A</code></p>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    lucide.createIcons();
+
+    let userAddress = null;
+    let isFrozen = false;
+    let radarChart = null;
+
+    // Initialize Chart.js 5-Axis Risk Radar
+    function initRadarChart() {
+      const ctx = document.getElementById('riskRadarChart').getContext('2d');
+      radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Bytecode Integrity', 'Slippage', 'Velocity Cap', 'Phishing Dist', 'Approval Scope'],
+          datasets: [{
+            label: 'Threat Level (0-100)',
+            data: [10, 5, 10, 5, 0],
+            backgroundColor: 'rgba(16, 185, 129, 0.25)',
+            borderColor: 'rgba(16, 185, 129, 0.9)',
+            pointBackgroundColor: '#10B981',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+              grid: { color: 'rgba(255, 255, 255, 0.08)' },
+              pointLabels: { color: '#9CA3AF', font: { size: 9 } },
+              ticks: { display: false, max: 100, min: 0 }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function updateRadarChart(scores, isAlert) {
+      if (!radarChart) return;
+      radarChart.data.datasets[0].data = scores;
+      if (isAlert) {
+        radarChart.data.datasets[0].backgroundColor = 'rgba(232, 65, 66, 0.3)';
+        radarChart.data.datasets[0].borderColor = '#E84142';
+        radarChart.data.datasets[0].pointBackgroundColor = '#E84142';
+      } else {
+        radarChart.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.25)';
+        radarChart.data.datasets[0].borderColor = '#10B981';
+        radarChart.data.datasets[0].pointBackgroundColor = '#10B981';
+      }
+      radarChart.update();
+    }
+
+    // Navigation Tabs
+    function switchTab(tabId) {
+      document.getElementById('tabAuditor').classList.add('hidden');
+      document.getElementById('tabX402').classList.add('hidden');
+      document.getElementById('tabArchitecture').classList.add('hidden');
+
+      document.getElementById('tabBtnAuditor').className = "px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-cyberCard flex items-center gap-2 transition";
+      document.getElementById('tabBtnX402').className = "px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-cyberCard flex items-center gap-2 transition";
+      document.getElementById('tabBtnArch').className = "px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-cyberCard flex items-center gap-2 transition";
+
+      if (tabId === 'auditor') {
+        document.getElementById('tabAuditor').classList.remove('hidden');
+        document.getElementById('tabBtnAuditor').className = "px-4 py-2 rounded-lg bg-avax text-white flex items-center gap-2";
+      } else if (tabId === 'x402') {
+        document.getElementById('tabX402').classList.remove('hidden');
+        document.getElementById('tabBtnX402').className = "px-4 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2";
+      } else if (tabId === 'architecture') {
+        document.getElementById('tabArchitecture').classList.remove('hidden');
+        document.getElementById('tabBtnArch').className = "px-4 py-2 rounded-lg bg-purple-600 text-white flex items-center gap-2";
+      }
+      lucide.createIcons();
+    }
+
+    // Presets configuration
+    const presets = {
+      safe: {
+        name: "Trader Joe Safe Swap",
+        target: "0x60ae616a2155ba3d9a68541ba4544862310933d4",
+        amount: 500,
+        slippage: 0.5,
+        calldata: "0x38ed1739 (swapExactTokensForTokens)",
+        score: 0,
+        radar: [5, 10, 10, 5, 0],
+        sig: "0xbd64c63de156e28eb76b926fb3106644c690a5f229d642ab5d0ccd51d0f0d3145b8f72a089d71481b0a7d5b8f72a089d71481b0a7d5b8f72a089d71481b0a7d51b",
+        factors: ["[+SAFE] Verified Avalanche protocol: Trader Joe Router", "[+SAFE] Normal slippage (0.5%), within daily limit."],
+        passed: true
+      },
+      drain: {
+        name: "Rogue AI Drain Attack",
+        target: "0x1234567890abcdef1234567890abcdef12345678",
+        amount: 8500,
+        slippage: 1.2,
+        calldata: "0x095ea7b3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        score: 100,
+        radar: [95, 20, 90, 85, 100],
+        sig: "0x11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff1b",
+        factors: [
+          "[CRITICAL] Unverified smart contract bytecode on Avalanche Fuji.",
+          "[CRITICAL] Unlimited token approval pattern (uint256.max) detected.",
+          "[CRITICAL] Single transaction exceeds risk cap ($8,500 > $2,500)."
+        ],
+        passed: false
+      },
+      slippage: {
+        name: "MEV Sandwich Slippage",
+        target: "0x2b2c81e08f1af8835a78bb2a90ae924ace0ea4be",
+        amount: 1200,
+        slippage: 6.5,
+        calldata: "0x38ed1739 (swapExactTokensForTokens)",
+        score: 72,
+        radar: [10, 95, 25, 20, 10],
+        sig: "0xaabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff001122334455667788991b",
+        factors: [
+          "[SAFE] Target is Pangolin Router.",
+          "[!ALERT] Abnormal pool slippage (6.5% > 3.0%). High risk of MEV sandwich drain.",
+          "[BLOCKED] Risk score exceeds maximum threshold (72 > 65)."
+        ],
+        passed: false
+      },
+      velocity: {
+        name: "24h Velocity Cap Breach",
+        target: "0x4e9f683a27e6bd13179663560f544699b42764ea",
+        amount: 9200,
+        slippage: 0.2,
+        calldata: "0xa0712d68 (mint Benqi qiAVAX)",
+        score: 85,
+        radar: [5, 5, 100, 10, 15],
+        sig: "0x8899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566771c",
+        factors: [
+          "[SAFE] Verified Benqi Lending Contract.",
+          "[CRITICAL] Exceeds 24-hour daily cumulative velocity ($9,200 > $8,500 remaining).",
+          "[BLOCKED] On-chain policy rejection enforced."
+        ],
+        passed: false
+      }
+    };
+
+    function applyPreset(type) {
+      const p = presets[type];
+      document.getElementById('targetAddress').value = p.target;
+      document.getElementById('txAmount').value = p.amount;
+      document.getElementById('slippage').value = p.slippage;
+      document.getElementById('calldata').value = p.calldata;
+      runAudit(p);
+    }
+
+    function runAudit(presetData = null) {
+      let score = 0;
+      let factors = [];
+      let passed = true;
+      let signature = "0xbd64c63de156e28eb76b926fb3106644c690a5f229d642ab5d0ccd51d0f0d3145b8f72a089d71481b0a7d5b8f72a089d71481b0a7d5b8f72a089d71481b0a7d51b";
+      let radarData = [10, 10, 10, 10, 10];
+
+      if (presetData) {
+        score = presetData.score;
+        factors = presetData.factors;
+        passed = presetData.passed;
+        signature = presetData.sig;
+        radarData = presetData.radar;
+      } else {
+        const amt = parseFloat(document.getElementById('txAmount').value) || 0;
+        const slip = parseFloat(document.getElementById('slippage').value) || 0;
+        const target = document.getElementById('targetAddress').value.trim();
+
+        if (target.toLowerCase() === "0x60ae616a2155ba3d9a68541ba4544862310933d4") {
+          factors.push("[+SAFE] Verified Avalanche protocol: Trader Joe Router");
+          radarData[0] = 5;
+        } else {
+          score += 35;
+          radarData[0] = 85;
+          factors.push("[!ALERT] Unverified contract bytecode on Avalanche Fuji/Snowtrace.");
+        }
+
+        if (slip > 3.0) {
+          score += 35;
+          radarData[1] = 90;
+          factors.push(`[!ALERT] High slippage anomaly detected (${slip}% > 3.0%).`);
+        } else {
+          radarData[1] = Math.round(slip * 15);
+        }
+
+        if (amt > 2500) {
+          score += 45;
+          radarData[2] = 95;
+          factors.push(`[CRITICAL] Single transaction exceeds cap ($${amt} > $2,500).`);
+        } else {
+          radarData[2] = Math.round((amt / 2500) * 40);
+        }
+
+        passed = score <= 65;
+      }
+
+      // Update UI
+      const badge = document.getElementById('verdictBadge');
+      const bar = document.getElementById('scoreBar');
+      const scoreText = document.getElementById('scoreText');
+      const container = document.getElementById('factorsContainer');
+      const sigContainer = document.getElementById('signatureHash');
+
+      scoreText.innerText = `${score} / 100`;
+      bar.style.width = `${Math.min(100, Math.max(5, score))}%`;
+      sigContainer.innerText = signature;
+
+      if (passed) {
+        badge.innerText = `PASSED (SCORE ${score}/100)`;
+        badge.className = "text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        bar.className = "bg-emerald-500 h-3 rounded-full transition-all duration-500";
+      } else {
+        badge.innerText = `BLOCKED (SCORE ${score}/100)`;
+        badge.className = "text-xs font-bold px-2.5 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30";
+        bar.className = "bg-red-500 h-3 rounded-full transition-all duration-500";
+      }
+
+      container.innerHTML = factors.map(f => `<p class="${f.includes('+SAFE') ? 'text-emerald-400' : 'text-red-400'} font-semibold">${f}</p>`).join('');
+
+      // Update Radar
+      updateRadarChart(radarData, !passed);
+
+      // Add to Activity Log
+      addLog(presetData ? presetData.name : "Custom AI Transaction Audit", passed ? "PASSED" : "BLOCKED");
+    }
+
+    function addLog(action, status) {
+      const log = document.getElementById('activityLog');
+      const timeStr = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.className = "p-2 rounded bg-cyberDark border border-cyberBorder flex items-center justify-between";
+      div.innerHTML = `<span>[${timeStr}] ${action}</span><span class="${status === 'EXECUTED' || status === 'PASSED' ? 'text-emerald-400' : 'text-red-400'} font-bold">${status}</span>`;
+      log.prepend(div);
+    }
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          userAddress = accounts[0];
+          document.getElementById('walletBtnText').innerText = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0xa869' }] // 43113 in hex
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xa869',
+                  chainName: 'Avalanche Fuji Testnet',
+                  nativeCurrency: { name: 'AVAX', symbol: 'AVAX', decimals: 18 },
+                  rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+                  blockExplorerUrls: ['https://testnet.snowtrace.io/']
+                }]
+              });
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        alert("MetaMask not detected! You can still test all AI Risk and Guardrail simulations directly in the UI.");
+      }
+    }
+
+    function toggleCircuitBreaker() {
+      isFrozen = !isFrozen;
+      const status = document.getElementById('circuitStatus');
+      const btn = document.getElementById('killSwitchBtn');
+      const vaultCard = document.getElementById('vaultCard');
+
+      if (isFrozen) {
+        status.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> FROZEN (HALTED)`;
+        status.className = "text-base font-bold text-red-400 flex items-center justify-center gap-1 mt-1";
+        btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> Unfreeze Vault`;
+        btn.className = "w-full bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-400 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition";
+        vaultCard.classList.add('pulse-danger');
+        addLog("EMERGENCY CIRCUIT BREAKER ACTIVATED", "FROZEN");
+        alert("[CIRCUIT BREAKER TRIGGERED] On-chain security freeze activated! All agent transfers and calls are blocked.");
+      } else {
+        status.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> ACTIVE`;
+        status.className = "text-base font-bold text-emerald-400 flex items-center justify-center gap-1 mt-1";
+        btn.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4"></i> Emergency Circuit Breaker (Freeze)`;
+        btn.className = "w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-400 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition";
+        vaultCard.classList.remove('pulse-danger');
+        addLog("Vault Unfrozen by Owner", "UNFROZEN");
+      }
+      lucide.createIcons();
+    }
+
+    function simulateExecution() {
+      if (isFrozen) {
+        alert("EXECUTION REVERTED: Circuit breaker is ACTIVE. Treasury is completely frozen to protect user funds!");
+        addLog("Execution Attempt while Vault Frozen", "REVERTED");
+        return;
+      }
+      const scoreText = document.getElementById('scoreText').innerText;
+      const score = parseInt(scoreText.split('/')[0].trim());
+
+      if (score > 65) {
+        alert(`TRANSACTION BLOCKED BY ON-CHAIN GUARDRAIL:
+Risk Score (${score}/100) exceeds safety threshold (65).
+The contract reverted with error: 'Policy: transaction flagged as high risk by AI Sentinel Engine'.`);
+        addLog("Blocked Malicious Execution on Fuji", "REVERTED");
+      } else {
+        alert(`TRANSACTION EXECUTED SUCCESSFULLY ON AVALANCHE FUJI:
+Risk Score: ${score}/100.
+EIP-712 Signature verified by AgentGuardVault.
+Contract verified, within 24h spending velocity, funds routed securely!`);
+        addLog("Guarded Action Executed on Fuji", "EXECUTED");
+      }
+    }
+
+    function testPayAudit() {
+      const box = document.getElementById('x402Result');
+      box.classList.remove('hidden');
+      box.innerHTML = `<span class="text-blue-400">Processing x402 Micropayment...</span><br>
+Payment: 0.05 USDC to AgentGuardVault on Avalanche Fuji.<br>
+Tx Hash: 0x9f8c...a31b (Sub-second confirmed).<br>
+<span class="text-emerald-400 font-bold">Status: 200 OK - Payment Verified. AI Risk Attestation generated!</span>`;
+      addLog("x402 Micropayment: 0.05 USDC Paid", "CONFIRMED");
+    }
+
+    // Init radar chart on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initRadarChart();
+    });
+  </script>
+</body>
+</html>

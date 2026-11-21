@@ -1,0 +1,28 @@
+{
+  "network": "Avalanche Fuji Testnet",
+  "chainId": 43113,
+  "currency": "AVAX",
+  "contracts": {
+    "AgentGuardVault": {
+      "address": "0x48e123B5F54F9D1c9A3B5f22E33b006A7bBf321A",
+      "explorer": "https://testnet.snowtrace.io/address/0x48e123B5F54F9D1c9A3B5f22E33b006A7bBf321A",
+      "compiler": "Solidity 0.8.20",
+      "optimization": true,
+      "runs": 200,
+      "verified": true
+    },
+    "MockUSDC": {
+      "address": "0x71C0a858e376097F7A263C70e4E22C81Cbb12E4D",
+      "explorer": "https://testnet.snowtrace.io/address/0x71C0a858e376097F7A263C70e4E22C81Cbb12E4D",
+      "decimals": 6,
+      "symbol": "USDC"
+    }
+  },
+  "ecosystemIntegrations": {
+    "traderJoeRouter": "0x60aE616a2155BA3d9A68541Ba4544862310933d4",
+    "benqiLending": "0x4e9f683a27e6bd13179663560f544699b42764ea",
+    "pangolinRouter": "0x2b2c81e08f1af8835a78bb2a90ae924ace0ea4be"
+  },
+  "deploymentDate": "2026-11-21T18:00:00Z",
+  "deployedBy": "Team CTST (UniHack 2026)"
+}

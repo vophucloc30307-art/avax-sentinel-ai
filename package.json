@@ -1,0 +1,27 @@
+{
+  "name": "avax-sentinel-ai",
+  "version": "1.0.0",
+  "description": "Autonomous AI Treasury & Transaction Firewall on Avalanche - UniHack 2026",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy:fuji": "npx hardhat run scripts/deploy.js --network fuji",
+    "ai:audit": "python ai_engine/risk_scorer.py"
+  },
+  "keywords": [
+    "avalanche",
+    "fuji",
+    "ai-agent",
+    "guardrails",
+    "defi",
+    "security",
+    "hackathon"
+  ],
+  "author": "Team CTST (Vo Phuc Loc, Nguyen Xuan Nghi)",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.22.0"
+  }
+}
